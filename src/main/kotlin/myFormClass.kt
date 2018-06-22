@@ -36,10 +36,20 @@ class TitleBanner: View() {
  * Menu with a form to ask the user for Chapter and Verse.
  */
 class LeftSideBar: View() {
+
+    /**
+     * Get bible Data from door43
+     * needs check for empty list
+     */
+    val bibleData = getBibleData()
+
+    val languages = bibleData.map { it.name }
+
     val controller: SideBarController by inject()
 
     val language = SimpleStringProperty()
     val versionSearch = SimpleStringProperty()
+    val languageList = FXCollections.observableArrayList(languages)
     val versions = FXCollections.observableArrayList("NIV",
             "ESV","NLT", "NRSV","MSG")
     val books = FXCollections.observableArrayList("Gen", "Exo", "Lev")
@@ -60,7 +70,7 @@ class LeftSideBar: View() {
                 form {
                     fieldset("1: Select a Language") {
                         field("Language") {
-                            textfield(language)
+                            combobox(language, languageList)
                         }
                         button("SELECT") {
                             addClass(MyStyle.niceButton)
@@ -208,5 +218,14 @@ class BibleView: View() {
         var chapterNo: String = otherController.chapter
         var textString: String = "1:1 The book of the words of Tobit, son of Tobiel, the son of Ananiel, " +
                 "the son of Aduel, the son of Gabael, of the seed of Asael, of the tribe of Nephthali;"
+
+        /**
+         * may or may not be used to update the bible viewer
+         */
+        fun updateView(bookName: String, chapterNo: String, textString: String) {
+            this.bookName = bookName
+            this.chapterNo = chapterNo
+            this.textString = textString
+        }
     }
 }
