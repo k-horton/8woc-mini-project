@@ -1,23 +1,66 @@
+import javafx.geometry.Pos
 import javafx.scene.paint.Color
+import javafx.scene.paint.Paint
+import javafx.scene.text.Font
+import javafx.scene.text.TextAlignment
 import tornadofx.*
 
 class MyStyle: Stylesheet() {
 
     companion object {
-        val tackyButton by cssclass()
+        val niceButton by cssclass()
+        val bookNameClass by cssclass()
+        val textClass by cssclass()
+        val titleClass by cssclass()
+        val bibleViewer by cssclass()
+        val buttonRadius = box(25.px)
 
-        private val topColor = c("#FF0000")
-        private val rightColor = c("#006400")
-        private val leftColor = c("#FFA500")
-        private val bottomColor = c("#800080")
+        val bg by cssproperty<MultiValue<Paint>>("-fx-background-color")  // Define custom property
+
+        private val boxColor = c("#c0c0c0")
     }
 
     init {
-        tackyButton {
-            rotate = 10.deg
-            borderColor += box(topColor,rightColor,bottomColor,leftColor)
-            fontFamily = "Comic Sans MS"
-            fontSize = 20.px
+        niceButton {
+            backgroundColor += Color.WHITE
+            backgroundRadius += buttonRadius
+            borderRadius += buttonRadius
+            borderColor += box(boxColor)
+            fontFamily = "Arial"
+            fontSize = 1.5.em
+        }
+
+        bibleViewer {
+            minWidth = 700.px
+            maxWidth = 800.px
+            alignment = Pos.TOP_CENTER
+            padding = box(10.px)
+
+            backgroundColor += Color.ANTIQUEWHITE
+            backgroundRadius += buttonRadius
+            borderRadius += buttonRadius
+        }
+
+        bookNameClass {
+            fill = Color.DARKSLATEBLUE
+            font = Font(25.0)
+        }
+
+        textClass { // NOT BEING USED CURRENTLY
+            fontFamily = "Times New Roman"
+            textAlignment= TextAlignment.CENTER
+        }
+
+        titleClass {
+            minWidth = 1000.px
+            maxWidth = 1000.px
+            alignment = Pos.TOP_CENTER
+
+            textAlignment = TextAlignment.CENTER
+            fill = Color.BEIGE
+            font = Font(36.0)
+            fontFamily = "Georgia"
+            // color is set in a style{} thing in the text object itself
         }
     }
 }
