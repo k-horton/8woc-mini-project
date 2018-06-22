@@ -1,147 +1,212 @@
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
-import javafx.scene.control.ComboBox
-import javafx.scene.layout.VBox
+import javafx.geometry.Pos
+import javafx.scene.paint.Color
+import javafx.scene.text.Font
+import javafx.scene.text.TextAlignment
 import tornadofx.*
 
 /**
- * Creates a form to ask the user for Chapter and Verse.
- * Eventually this field wil be the text displayed.
+ * Creates a title across the top of the app.
  */
-class MyForm : View() {
-    val controller: MyController by inject()
-    val chapter = SimpleStringProperty()
-    val verse = SimpleStringProperty()
+class TitleBanner: View() {
+    override val root = vbox {
+        // style for outside the text
+        addClass(MyStyle.titleClass)
 
-    override val root = form {
-        fieldset {
-            field("Chapter") {
-                textfield(chapter)
-            }
-            field("Verse(s)") {
-                textfield(verse)
-            }
-
-            button("Go to ListView") {
-                action {
-                    replaceWith(ListView::class, ViewTransition.Slide(0.8.seconds, ViewTransition.Direction.LEFT))
-                }
-            }
-
-            // this totally screws over the formatting of the entire app... why?
-            button("Open editor") {
-                action {
-                    openInternalWindow<PopUpFragment>()
-                }
-            }
-
-            button("Submit") {
-                action {
-                    controller.getChapter(chapter.value)
-                    controller.getVerse(verse.value)
-                    chapter.value = ""
-                    verse.value = ""
-                }
+        text("Bible Reader") {
+            // sets text color
+            // because to affect the text it's gotta be in here
+            // but for the background it needs to be outside of the text object
+            // hence, two different style things
+            style {
+                fill = Color.BEIGE
             }
         }
-    }
-
-    class MyController : Controller() {
-
-        // functions for form submit
-        fun getChapter(inputValue: String) {
-            print("Displaying Genesis $inputValue:")
-        }
-        fun getVerse(inputValue: String) {
-            println("$inputValue on screen!")
+        text("Read the Bible. It's pretty good. 10/10\n") {
+            style {
+                font = Font(10.0)
+                fill = Color.BEIGE
+            }
         }
     }
 }
 
-
-// MOSTLY A TEST
-
+/**
+ * Menu with a form to ask the user for Chapter and Verse.
+ */
 class LeftSideBar: View() {
     val controller: SideBarController by inject()
+
     val language = SimpleStringProperty()
     val versionSearch = SimpleStringProperty()
     val versions = FXCollections.observableArrayList("NIV",
             "ESV","NLT", "NRSV","MSG")
+    val books = FXCollections.observableArrayList("Gen", "Exo", "Lev")
+    val bookSelection = SimpleStringProperty()
     val chapter = SimpleStringProperty()
-    val verse = SimpleStringProperty()
+    //val verse = SimpleStringProperty()
 
     override val root = vbox {
-        // LANGUAGE SELECTOR
-        val languageSelect = form {
-            hbox {
-                label("Language")
-                textfield(language)
-            }
-            button("SELECT") {
-                addClass(MyStyle.tackyButton)
-                useMaxWidth = false
-                action {
-                    controller.setLanguage(language.value)
+        style {
+            padding = box(10.px)
+        }
+        squeezebox {
+            /**
+             * Select a language from an auto-complete textbox.
+             * (Auto-complete feature IN PROGRESS.)
+             */
+            fold("Language Selection", expanded = true, closeable = false) {
+                form {
+                    fieldset("1: Select a Language") {
+                        field("Language") {
+                            textfield(language)
+                        }
+                        button("SELECT") {
+                            addClass(MyStyle.niceButton)
+                            useMaxWidth = false
+                            action {
+                                if(language.value == null){
+                                    println("No language selected. \n" +
+                                            "Default language set to English.")
+                                    controller.setLanguage("English")
+                                }
+                                // else if(language.value is not in array)
+                                else {
+                                    controller.setLanguage(language.value)
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            // VERSION SELECTOR
-            combobox(versionSearch, versions)
-            button("SUBMIT") {
-                action {
-                    controller.setVersion(versionSearch.value)
+            /**
+             * Select a version from a dropdown menu.
+             */
+            fold("Version Selection", expanded = true, closeable = false) {
+                form {
+                    fieldset("2: Select a Version") {
+                        field("Version") {
+                            combobox(versionSearch, versions)
+                        }
+                        button("SUBMIT") {
+                            addClass(MyStyle.niceButton)
+                            action {
+                                if(versionSearch.value == null){
+                                    println("No version selected.\n" +
+                                            "Default version set to the Message. Are you happy now?")
+                                    controller.setVersion("MSG")
+                                }
+                                else {
+                                    controller.setVersion(versionSearch.value)
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            // CHAPTER && VERSE SELECTOR
-            hbox {
-                label("Chapter")
-                textfield(chapter)
-                label("Verse")
-                textfield(verse)
-            }
-            button("GO!") {
-                action {
-                    controller.setChapterAndVerse(chapter.value, verse.value)
-                    chapter.value = ""
-                    verse.value = ""
+            /**
+             * Select a book and type in a chapter number.
+             * TONS of error-trapping.
+             */
+            fold("Book and Chapter", expanded= true, closeable = false) {
+                form {
+                    fieldset("3: Select a Book and Chapter") {
+                        field("Book") {
+                            combobox(bookSelection, books)
+                        }
+                        field("Chapter") {
+                            textfield(chapter)
+                        }
+                        button("GO!") {
+                            addClass(MyStyle.niceButton)
+                            action {
+                                // if book isn't selected
+                                if(bookSelection.value == null) {
+                                    println("No book selected.\n" +
+                                            "Default set to Genesis 1.")
+                                    controller.setBookAndChapter("Gen", "1")
+                                }
+                                // if book but no chapter
+                                else if(bookSelection.value != null && chapter.value == null) {
+                                    println("Default chapter set to 1.")
+                                    controller.setBookAndChapter(bookSelection.value, "1")
+                                }
+                                // if they did the gosh-darn thing correctly
+                                else {
+                                    controller.setBookAndChapter(bookSelection.value, chapter.value)
+                                    //this@fold.isExpanded = false
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
     class SideBarController : Controller() {
+        var lang: String = "English"
+        var vers: String = "MSG"
+        var book: String = "Genesis"
+        var chapter: String = "1"
+
         // sets the language
         fun setLanguage(inputValue: String) {
             println("$inputValue set as language")
+            lang = inputValue
         }
         fun setVersion(inputValue: String) {
             println("$inputValue set as version")
+            vers = inputValue
         }
-        fun setChapterAndVerse(chapterValue: String, verseValue: String) {
-            // FIGURE OUT HOW TO ACCEPT NULL VALUES
-            println("Opening $chapterValue:$verseValue...")
+        fun setBookAndChapter(bookValue: String, chapterValue: String) {
+            println("Opening $bookValue $chapterValue...")
+            book = bookValue
+            chapter = chapterValue
         }
     }
 }
 
 /**
- * Creates a list on-screen of the ArrayList inside the contained controller.
+ * Displays the Bible text on screen.
  */
-class ListView: View() {
+class BibleView: View() {
+
     // assign MyController to a value
     val controller: MyController by inject()
+    var userFontSize : Double = 15.0
 
     override val root = vbox {
-        label("My items")
-        listview(controller.values)
-        button("Go to Form") {
-            action {
-                replaceWith(MyForm::class, ViewTransition.Slide(0.8.seconds, ViewTransition.Direction.RIGHT))
+        addClass(MyStyle.bibleViewer)
+
+        text(controller.bookName + " " + controller.chapterNo) {
+            addClass(MyStyle.bookNameClass)
+            style {
+                fontFamily = "Georgia"
             }
+        }
+        text(controller.textString) {
+            // style isn't in stylesheet bc it needs access to userFontSize
+            style {
+                font = Font(userFontSize)
+                fontFamily = "Papyrus"
+                textAlignment= TextAlignment.CENTER
+            }
+            // sets text to wrap at 1000 px
+            // which DIDN'T WORK IN THE CLASS (╯°□°）╯︵ ┻━┻
+            // BUT IT WORKS HERE FOR SOME REASON (╯°□°）╯︵ ┻━┻
+            // I SPENT HOURS ON THIS                (╯°□°）╯︵ ┻━┻
+            this.wrappingWidth = 700.0
         }
     }
 
     class MyController : Controller() {
-        // values for dropdown list
-        val values = FXCollections.observableArrayList("Alpha", "Beta", "Gamma", "Delta")
+        val otherController: LeftSideBar.SideBarController by inject()
+
+        var bookName: String = otherController.book
+        var chapterNo: String = otherController.chapter
+        var textString: String = "1:1 The book of the words of Tobit, son of Tobiel, the son of Ananiel, " +
+                "the son of Aduel, the son of Gabael, of the seed of Asael, of the tribe of Nephthali;"
     }
 }
