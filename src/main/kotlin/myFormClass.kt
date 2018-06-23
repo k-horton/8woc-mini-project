@@ -41,20 +41,22 @@ class LeftSideBar: View() {
      * Get bible Data from door43
      * needs check for empty list
      */
-    val bibleData = getBibleData()
-
-    val languages = bibleData.map { it.name }
+    private val bibleData = getBibleData()
 
     val controller: SideBarController by inject()
 
     val language = SimpleStringProperty()
     val versionSearch = SimpleStringProperty()
-    val languageList = FXCollections.observableArrayList(languages)
-    val versions = FXCollections.observableArrayList("NIV",
-            "ESV","NLT", "NRSV","MSG")
-    val books = FXCollections.observableArrayList("Gen", "Exo", "Lev")
+    val languageList = FXCollections.observableArrayList(bibleData.map { it.name })
+    val versions = FXCollections.observableArrayList<String?>()
+    val books = FXCollections.observableArrayList<String?>()
     val bookSelection = SimpleStringProperty()
     val chapter = SimpleStringProperty()
+
+    var curLan = emptyList<Version>()
+    var curVer = emptyList<Book>()
+    lateinit var curBook : USFMBook
+
     //val verse = SimpleStringProperty()
 
     override val root = vbox {
@@ -84,6 +86,17 @@ class LeftSideBar: View() {
                                 // else if(language.value is not in array)
                                 else {
                                     controller.setLanguage(language.value)
+
+                                    /**
+                                     * Save the list of versions for the current language
+                                     * and add them to the dropdown menu
+                                     * Clear all lower options
+                                     */
+                                    curLan = bibleData.filter { it.name == language.value }[0].versions
+                                    versions.clear()
+                                    versions.addAll(curLan.map { it.name })
+
+                                    books.clear()
                                 }
                             }
                         }
@@ -109,6 +122,17 @@ class LeftSideBar: View() {
                                 }
                                 else {
                                     controller.setVersion(versionSearch.value)
+
+                                    /**
+                                     * Save the list of books for the current version
+                                     * and add them to the dropdown menu
+                                     * Clear all lower options
+                                     */
+                                    curVer =  curLan.filter { it.name == versionSearch.value }[0].books
+
+                                    books.clear()
+                                    books.addAll(curVer.map { it.name })
+                                    //chapters.clear()
                                 }
                             }
                         }
@@ -141,6 +165,12 @@ class LeftSideBar: View() {
                                 else if(bookSelection.value != null && chapter.value == null) {
                                     println("Default chapter set to 1.")
                                     controller.setBookAndChapter(bookSelection.value, "1")
+
+                                    /**
+                                     * Obtain and store the data from the selected book
+                                     */
+                                    curBook = getBook(curVer.filter { it.name == bookSelection.value }[0].url)
+
                                 }
                                 // if they did the gosh-darn thing correctly
                                 else {
@@ -209,6 +239,10 @@ class BibleView: View() {
             // I SPENT HOURS ON THIS                (╯°□°）╯︵ ┻━┻
             this.wrappingWidth = 700.0
         }
+    }
+
+    fun updateView (bookName: String, chapterNo: String, textString: String) {
+        controller.updateView(bookName, chapterNo, textString)
     }
 
     class MyController : Controller() {

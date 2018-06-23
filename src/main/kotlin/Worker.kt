@@ -17,6 +17,9 @@ fun getBibleData() : List<Language> {
     return bibleData
 }
 
+/**
+ * Callable function to obtain the wanted book
+ */
 fun getBook (url: String) : USFMBook {
 
     val bibleBook = URL(url).readText()
@@ -24,14 +27,28 @@ fun getBook (url: String) : USFMBook {
     return formatUSFM(bibleBook)
 }
 
-fun formatUSFM(usfmString: String) : USFMBook {
+/**
+ * Used to format the obtained book into structs for easy chapter access
+ */
+private fun formatUSFM(usfmString: String) : USFMBook {
     val usfmBook = mutableListOf<USFMChpt>()
 
+    /**
+     * Turn massive string of the book into a list of lines
+     */
     val lines = usfmString.lines()
 
     var chpt = ""
     var name = ""
 
+    /**
+     * Go through each line and check if there is any data needed to be stored:
+     * \h is the name of the book
+     * \c is a new chapter starting
+     * \v is a verse
+     * \p is a paragraph that might have part of a verse
+     * \s5 is a new line
+     */
     for (line in lines) {
         val key = line.substringBefore(' ')
 
@@ -43,7 +60,7 @@ fun formatUSFM(usfmString: String) : USFMBook {
                 chpt = ""
             }
             "\\v" -> chpt += line.substring(3)
-            "\\p" -> chpt += line.substring(3)
+            "\\p" -> if (line.length > 3) chpt += line.substring(3)
             "\\s5" -> chpt += "\n"
         }
     }
@@ -53,7 +70,10 @@ fun formatUSFM(usfmString: String) : USFMBook {
 
 }
 
-
+/**
+ * Takes the Json formated catalog in a root class and stores the languages,
+ * versions, and books into a developer friendly class structure (BibleStructs.kt)
+ */
 fun D43toBibles (root: Root) : List<Language> {
 
     val d43Data = mutableListOf<Language>()
@@ -68,13 +88,19 @@ fun D43toBibles (root: Root) : List<Language> {
 
         for (resource in language.resources) {
 
+            /**
+             * Make sure it's data for actual books of the Bible
+             */
             if (resource.projects.size >= 27 && resource.subject == "Bible") {
                 val books = mutableListOf<Book>()
 
-                val verName = resource.title
+                val verName = resource.identifier
 
                 for (project in resource.projects) {
 
+                    /**
+                     * Make sure that this version has Books to online
+                     */
                     if (project.formats != null) {
 
 
@@ -83,6 +109,9 @@ fun D43toBibles (root: Root) : List<Language> {
 
                         for (book in project.formats) {
 
+                            /**
+                             * Only obtain USFM file data
+                             */
                             if (book.url.contains(".usfm")) {
                                 books.add(Book(bookID, bookName, book.url))
                             }
@@ -90,7 +119,9 @@ fun D43toBibles (root: Root) : List<Language> {
                     }
 
                 }
-                versions.add(Version(verName, books))
+                if (books.isNotEmpty()) {
+                    versions.add(Version(verName, books))
+                }
             }
 
         }
