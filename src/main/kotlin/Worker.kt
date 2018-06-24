@@ -21,6 +21,7 @@ fun getBibleData() : List<Language> {
  * Callable function to obtain the wanted book
  */
 fun getBook (url: String) : USFMBook {
+    println(url)
 
     val bibleBook = URL(url).readText()
 
@@ -55,15 +56,26 @@ private fun formatUSFM(usfmString: String) : USFMBook {
         when (key) {
             "\\h" -> name = line.substring(line.lastIndexOf(" ") + 1)
             "\\c" -> if (chpt != "") {
-                val num = line[line.length - 1].toInt() - 1
+                val num = line.substring(3).filter{ it != ' ' }.toInt() - 1
                 usfmBook.add(USFMChpt(num, chpt))
                 chpt = ""
             }
-            "\\v" -> chpt += line.substring(3)
-            "\\p" -> if (line.length > 3) chpt += line.substring(3)
-            "\\s5" -> chpt += "\n"
+            "\\v" -> {
+                chpt += line.substring(3)
+                if (!chpt.endsWith("\n")) {
+                    chpt += "\n"
+                }
+            }
+            "\\p" -> if (line.length > 3 && chpt != "") chpt += line.substring(3)
+            "\\s5" -> if (chpt != "") {
+                chpt += "\n"
+            }
         }
     }
+    /**
+     * Save the last chapter as the above method always saves the previous one
+     */
+    usfmBook.add(USFMChpt(usfmBook.size + 1, chpt))
 
 
     return USFMBook(name, usfmBook)

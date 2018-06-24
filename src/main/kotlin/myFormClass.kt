@@ -1,6 +1,8 @@
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
+import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.TextAlignment
@@ -43,7 +45,7 @@ class LeftSideBar: View() {
      */
     private val bibleData = getBibleData()
 
-    val controller: SideBarController by inject()
+    val controller: MyController by inject()
 
     val language = SimpleStringProperty()
     val versionSearch = SimpleStringProperty()
@@ -52,6 +54,7 @@ class LeftSideBar: View() {
     val books = FXCollections.observableArrayList<String?>()
     val bookSelection = SimpleStringProperty()
     val chapter = SimpleStringProperty()
+    val chapters = FXCollections.observableArrayList<String?>()
 
     var curLan = emptyList<Version>()
     var curVer = emptyList<Book>()
@@ -93,10 +96,12 @@ class LeftSideBar: View() {
                                      * Clear all lower options
                                      */
                                     curLan = bibleData.filter { it.name == language.value }[0].versions
+
                                     versions.clear()
                                     versions.addAll(curLan.map { it.name })
 
                                     books.clear()
+                                    chapters.clear()
                                 }
                             }
                         }
@@ -115,12 +120,7 @@ class LeftSideBar: View() {
                         button("SUBMIT") {
                             addClass(MyStyle.niceButton)
                             action {
-                                if(versionSearch.value == null){
-                                    println("No version selected.\n" +
-                                            "Default version set to the Message. Are you happy now?")
-                                    controller.setVersion("MSG")
-                                }
-                                else {
+                                if(versionSearch.value != null && language.value != null){
                                     controller.setVersion(versionSearch.value)
 
                                     /**
@@ -132,7 +132,8 @@ class LeftSideBar: View() {
 
                                     books.clear()
                                     books.addAll(curVer.map { it.name })
-                                    //chapters.clear()
+
+                                    chapters.clear()
                                 }
                             }
                         }
@@ -143,67 +144,57 @@ class LeftSideBar: View() {
              * Select a book and type in a chapter number.
              * TONS of error-trapping.
              */
-            fold("Book and Chapter", expanded= true, closeable = false) {
+            fold("Book", expanded = true, closeable = false) {
                 form {
-                    fieldset("3: Select a Book and Chapter") {
+                    fieldset("3: Select a Book") {
                         field("Book") {
                             combobox(bookSelection, books)
                         }
-                        field("Chapter") {
-                            textfield(chapter)
-                        }
-                        button("GO!") {
+                        button("Submit") {
                             addClass(MyStyle.niceButton)
                             action {
                                 // if book isn't selected
-                                if(bookSelection.value == null) {
-                                    println("No book selected.\n" +
-                                            "Default set to Genesis 1.")
-                                    controller.setBookAndChapter("Gen", "1")
-                                }
-                                // if book but no chapter
-                                else if(bookSelection.value != null && chapter.value == null) {
-                                    println("Default chapter set to 1.")
-                                    controller.setBookAndChapter(bookSelection.value, "1")
-
+                                if (bookSelection.value != null && versionSearch.value != null) {
                                     /**
                                      * Obtain and store the data from the selected book
                                      */
                                     curBook = getBook(curVer.filter { it.name == bookSelection.value }[0].url)
+                                    //println(curBook.chapters.size)
 
-                                }
-                                // if they did the gosh-darn thing correctly
-                                else {
-                                    controller.setBookAndChapter(bookSelection.value, chapter.value)
-                                    //this@fold.isExpanded = false
+                                    chapters.addAll(IntRange(1, curBook.chapters.size).map { it.toString() })
+                                    controller.setBook(curBook.name)
+
                                 }
                             }
                         }
                     }
                 }
             }
-        }
-    }
 
-    class SideBarController : Controller() {
-        var lang: String = "English"
-        var vers: String = "MSG"
-        var book: String = "Genesis"
-        var chapter: String = "1"
-
-        // sets the language
-        fun setLanguage(inputValue: String) {
-            println("$inputValue set as language")
-            lang = inputValue
-        }
-        fun setVersion(inputValue: String) {
-            println("$inputValue set as version")
-            vers = inputValue
-        }
-        fun setBookAndChapter(bookValue: String, chapterValue: String) {
-            println("Opening $bookValue $chapterValue...")
-            book = bookValue
-            chapter = chapterValue
+            /**
+             * Set the Selection for Chapter
+             */
+            fold("Chapter", expanded = true, closeable = false) {
+                form {
+                    fieldset("4: Select a Chapter") {
+                        field("Chapter") {
+                            combobox(chapter, chapters)
+                        }
+                        button("GO!") {
+                            addClass(MyStyle.niceButton)
+                            action {
+                                if (chapter.value != null && bookSelection.value != null) {
+                                    /**
+                                     * Obtain the verses and pass them to the controller
+                                     */
+                                    val scripture = curBook.chapters[chapter.value.toInt() - 1].verses
+                                    controller.setChapterAndText(chapter.value, scripture)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -217,16 +208,20 @@ class BibleView: View() {
     val controller: MyController by inject()
     var userFontSize : Double = 15.0
 
-    override val root = vbox {
+    override var root = vbox {
+        addClass(MyStyle.bibleViewer)
+    }
+
+/*{
         addClass(MyStyle.bibleViewer)
 
-        text(controller.bookName + " " + controller.chapterNo) {
+        text(controller.book + " " + controller.chapter) {
             addClass(MyStyle.bookNameClass)
             style {
                 fontFamily = "Georgia"
             }
         }
-        text(controller.textString) {
+        var verses = text(controller.verses) {
             // style isn't in stylesheet bc it needs access to userFontSize
             style {
                 font = Font(userFontSize)
@@ -239,27 +234,78 @@ class BibleView: View() {
             // I SPENT HOURS ON THIS                (╯°□°）╯︵ ┻━┻
             this.wrappingWidth = 700.0
         }
+
+
     }
+*/
+    /**
+     * Cheap attempt to reload the view.... Us -> (╯°□°）╯︵ ┻━┻ <- root
+     */
+    fun updateScripture () {
+        root.apply {
+            vbox {
+                addClass(MyStyle.bibleViewer)
 
-    fun updateView (bookName: String, chapterNo: String, textString: String) {
-        controller.updateView(bookName, chapterNo, textString)
-    }
-
-    class MyController : Controller() {
-        val otherController: LeftSideBar.SideBarController by inject()
-
-        var bookName: String = otherController.book
-        var chapterNo: String = otherController.chapter
-        var textString: String = "1:1 The book of the words of Tobit, son of Tobiel, the son of Ananiel, " +
-                "the son of Aduel, the son of Gabael, of the seed of Asael, of the tribe of Nephthali;"
-
-        /**
-         * may or may not be used to update the bible viewer
-         */
-        fun updateView(bookName: String, chapterNo: String, textString: String) {
-            this.bookName = bookName
-            this.chapterNo = chapterNo
-            this.textString = textString
+                text(controller.bookName + " " + controller.chapter) {
+                    addClass(MyStyle.bookNameClass)
+                    style {
+                        fontFamily = "Georgia"
+                    }
+                }
+                println(controller.verses)
+                scrollpane {
+                    text(controller.verses) {
+                        // style isn't in stylesheet bc it needs access to userFontSize
+                        style {
+                            font = Font(userFontSize)
+                            fontFamily = "Papyrus"
+                            textAlignment= TextAlignment.CENTER
+                        }
+                        // sets text to wrap at 1000 px
+                        // which DIDN'T WORK IN THE CLASS (╯°□°）╯︵ ┻━┻
+                        // BUT IT WORKS HERE FOR SOME REASON (╯°□°）╯︵ ┻━┻
+                        // I SPENT HOURS ON THIS                (╯°□°）╯︵ ┻━┻
+                        this.wrappingWidth = 640.0
+                    }
+                }
+            }
         }
+    }
+}
+
+/**
+ * Used to store the values and data fto display
+ */
+class MyController : Controller() {
+
+    val textView: BibleView by inject()
+
+    var lang: String = ""
+    var vers: String = ""
+    var bookName: String = ""
+    var chapter: String = ""
+    var verses: String = ""
+
+
+    // sets the language
+    fun setLanguage(inputValue: String) {
+        println("$inputValue set as language")
+        lang = inputValue
+    }
+    fun setVersion(inputValue: String) {
+        println("$inputValue set as version")
+        vers = inputValue
+    }
+    fun setBook(bookValue: String) {
+        //println("Opening $bookValue...")
+        bookName = bookValue
+    }
+
+    fun setChapterAndText(chapterNo: String, textValue: String) {
+        //println(textValue)
+        chapter = chapterNo
+        verses = textValue
+
+        textView.updateScripture()
     }
 }
