@@ -1,3 +1,8 @@
+/**
+ * this file contains the classes used to store the JSON data
+ * pulled trhough Moshi and Retrofit
+ */
+
 import com.squareup.moshi.Json
 
 /**
