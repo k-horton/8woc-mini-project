@@ -56,9 +56,8 @@ class LeftSideBar: View() {
     var curLan = emptyList<Version>()
     var curVer = emptyList<Book>()
     lateinit var curBook : USFMBook
+    
     var curBookName = ""
-
-    //val verse = SimpleStringProperty()
 
     override val root = vbox {
         style {
