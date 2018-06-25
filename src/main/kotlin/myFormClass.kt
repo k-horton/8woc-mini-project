@@ -158,6 +158,7 @@ class LeftSideBar: View() {
                                     curBook = getBook(curVer.filter { it.name == bookSelection.value }[0].url)
                                     //println(curBook.chapters.size)
 
+                                    chapters.clear()
                                     chapters.addAll(IntRange(1, curBook.chapters.size).map { it.toString() })
                                     curBookName = curBook.name
                                 }
