@@ -1,5 +1,4 @@
 
-
 buildscript {
     ext.kotlin_version = '1.2.31'
     ext.tornado_version = '1.7.16'
@@ -40,6 +39,25 @@ dependencies {
     implementation 'com.squareup.moshi:moshi:1.6.0'
     implementation 'com.squareup.moshi:moshi-adapters:1.6.0'
 
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
