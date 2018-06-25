@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/BibleApp.iml" filepath="$PROJECT_DIR$/.idea/modules/BibleApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/BibleApp_main.iml" filepath="$PROJECT_DIR$/.idea/modules/BibleApp_main.iml" group="BibleApp" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/BibleApp_test.iml" filepath="$PROJECT_DIR$/.idea/modules/BibleApp_test.iml" group="BibleApp" />
+    </modules>
+  </component>
+</project>
