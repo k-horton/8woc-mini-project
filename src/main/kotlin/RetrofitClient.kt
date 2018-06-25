@@ -1,6 +1,6 @@
 /**
  * This file contains the Retrofit Client which is used to build
- * the retrofit instance and use Moshi to as a mehtod to store the
+ * the retrofit instance and use Moshi to as a method to store the
  * JSON catalog
  */
 
