@@ -22,7 +22,6 @@ class MyStyle: Stylesheet() {
 
     init {
         niceButton {
-            backgroundColor += Color.WHITE
             backgroundRadius += buttonRadius
             borderRadius += buttonRadius
             borderColor += box(boxColor)
