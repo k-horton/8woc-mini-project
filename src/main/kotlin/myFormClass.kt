@@ -224,7 +224,7 @@ class BibleView: View() {
                     fontFamily = "Papyrus"
                     textAlignment= TextAlignment.CENTER
                 }
-            // sets text to wrap at 1000 px
+            // sets text to wrap
             // which DIDN'T WORK IN THE CLASS (╯°□°）╯︵ ┻━┻
             // BUT IT WORKS HERE FOR SOME REASON (╯°□°）╯︵ ┻━┻
             // I SPENT HOURS ON THIS                (╯°□°）╯︵ ┻━┻
