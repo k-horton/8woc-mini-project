@@ -1,6 +1,9 @@
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
+/**
+ * Uses Retrofit to pull set up a structure to store the Json catalog
+ */
 class RetrofitClient {
 
     private val ROOT_URL = "https://api.door43.org/v3/"

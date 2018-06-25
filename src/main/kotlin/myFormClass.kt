@@ -1,12 +1,9 @@
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
-import javafx.geometry.Pos
-import javafx.scene.control.ScrollPane
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.TextAlignment
 import tornadofx.*
-import javax.swing.JScrollPane
 
 /**
  * Creates a title across the top of the app.
@@ -43,21 +40,24 @@ class LeftSideBar: View() {
      * Get bible Data from door43
      * needs check for empty list
      */
-    val bibleData = getBibleData()
+    private val bibleData = getBibleData()
 
-    val languages = bibleData.map { it.name }
-
-    val controller: SideBarController by inject()
+    val controller: MyController by inject()
 
     val language = SimpleStringProperty()
     val versionSearch = SimpleStringProperty()
-    val languageList = FXCollections.observableArrayList(languages)
-    val versions = FXCollections.observableArrayList("NIV",
-            "ESV","NLT", "NRSV","MSG")
-    val books = FXCollections.observableArrayList("Gen", "Exo", "Lev")
+    val languageList = FXCollections.observableArrayList(bibleData.map { it.name })
+    val versions = FXCollections.observableArrayList<String?>()
+    val books = FXCollections.observableArrayList<String?>()
     val bookSelection = SimpleStringProperty()
     val chapter = SimpleStringProperty()
-    //val verse = SimpleStringProperty()
+    val chapters = FXCollections.observableArrayList<String?>()
+
+    var curLan = emptyList<Version>()
+    var curVer = emptyList<Book>()
+    lateinit var curBook : USFMBook
+    
+    var curBookName = ""
 
     override val root = vbox {
         style {
@@ -74,7 +74,7 @@ class LeftSideBar: View() {
                         field("Language") {
                             combobox(language, languageList)
                         }
-                        button("SELECT") {
+                        button("Select") {
                             addClass(MyStyle.niceButton)
                             useMaxWidth = false
                             action {
@@ -86,6 +86,19 @@ class LeftSideBar: View() {
                                 // else if(language.value is not in array)
                                 else {
                                     controller.setLanguage(language.value)
+
+                                    /**
+                                     * Save the list of versions for the current language
+                                     * and add them to the dropdown menu
+                                     * Clear all lower options
+                                     */
+                                    curLan = bibleData.filter { it.name == language.value }[0].versions
+
+                                    versions.clear()
+                                    versions.addAll(curLan.map { it.name })
+
+                                    books.clear()
+                                    chapters.clear()
                                 }
                             }
                         }
@@ -101,16 +114,23 @@ class LeftSideBar: View() {
                         field("Version") {
                             combobox(versionSearch, versions)
                         }
-                        button("SUBMIT") {
+                        button("Select") {
                             addClass(MyStyle.niceButton)
                             action {
-                                if(versionSearch.value == null){
-                                    println("No version selected.\n" +
-                                            "Default version set to the Message. Are you happy now?")
-                                    controller.setVersion("MSG")
-                                }
-                                else {
+                                if(versionSearch.value != null && language.value != null){
                                     controller.setVersion(versionSearch.value)
+
+                                    /**
+                                     * Save the list of books for the current version
+                                     * and add them to the dropdown menu
+                                     * Clear all lower options
+                                     */
+                                    curVer =  curLan.filter { it.name == versionSearch.value }[0].books
+
+                                    books.clear()
+                                    books.addAll(curVer.map { it.name })
+
+                                    chapters.clear()
                                 }
                             }
                         }
@@ -121,61 +141,58 @@ class LeftSideBar: View() {
              * Select a book and type in a chapter number.
              * TONS of error-trapping.
              */
-            fold("Book and Chapter", expanded= true, closeable = false) {
+            fold("Book", expanded = true, closeable = false) {
                 form {
-                    fieldset("3: Select a Book and Chapter") {
+                    fieldset("3: Select a Book") {
                         field("Book") {
                             combobox(bookSelection, books)
                         }
-                        field("Chapter") {
-                            textfield(chapter)
-                        }
-                        button("GO!") {
+                        button("Select") {
                             addClass(MyStyle.niceButton)
                             action {
                                 // if book isn't selected
-                                if(bookSelection.value == null) {
-                                    println("No book selected.\n" +
-                                            "Default set to Genesis 1.")
-                                    controller.setBookAndChapter("Gen", "1")
-                                }
-                                // if book but no chapter
-                                else if(bookSelection.value != null && chapter.value == null) {
-                                    println("Default chapter set to 1.")
-                                    controller.setBookAndChapter(bookSelection.value, "1")
-                                }
-                                // if they did the gosh-darn thing correctly
-                                else {
-                                    controller.setBookAndChapter(bookSelection.value, chapter.value)
-                                    //this@fold.isExpanded = false
+                                if (bookSelection.value != null && versionSearch.value != null) {
+                                    /**
+                                     * Obtain and store the data from the selected book
+                                     */
+                                    curBook = getBook(curVer.filter { it.name == bookSelection.value }[0].url)
+                                    //println(curBook.chapters.size)
+
+                                    chapters.addAll(IntRange(1, curBook.chapters.size).map { it.toString() })
+                                    curBookName = curBook.name
                                 }
                             }
                         }
                     }
                 }
             }
-        }
-    }
 
-    class SideBarController : Controller() {
-        var lang: String = "English"
-        var vers: String = "MSG"
-        var book: String = "Genesis"
-        var chapter: String = "1"
-
-        // sets the language
-        fun setLanguage(inputValue: String) {
-            println("$inputValue set as language")
-            lang = inputValue
-        }
-        fun setVersion(inputValue: String) {
-            println("$inputValue set as version")
-            vers = inputValue
-        }
-        fun setBookAndChapter(bookValue: String, chapterValue: String) {
-            println("Opening $bookValue $chapterValue...")
-            book = bookValue
-            chapter = chapterValue
+            /**
+             * Set the Selection for Chapter
+             */
+            fold("Chapter", expanded = true, closeable = false) {
+                form {
+                    fieldset("4: Select a Chapter") {
+                        field("Chapter") {
+                            combobox(chapter, chapters)
+                        }
+                        button("Submit") {
+                            addClass(MyStyle.niceButton)
+                            action {
+                                if (chapter.value != null && bookSelection.value != null) {
+                                    /**
+                                     * Obtain the verses and pass them to the controller
+                                     */
+                                    val scripture = curBook.chapters[chapter.value.toInt() - 1].verses
+                                    println(chapter.value)
+                                    println(scripture)
+                                    controller.setScreen(curBookName, chapter.value, scripture)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -189,49 +206,68 @@ class BibleView: View() {
     val controller: MyController by inject()
     var userFontSize : Double = 15.0
 
-    override val root = vbox {
-        scrollpane {
-            addClass(MyStyle.bibleViewer)
-            text(controller.bookName + " " + controller.chapterNo) {
-                addClass(MyStyle.bookNameClass)
-                style {
-                    fontFamily = "Georgia"
-                }
+    override var root = vbox {
+        println(controller)
+        addClass(MyStyle.bibleViewer)
+
+        text(controller.bookName + " " + controller.chapter) {
+            addClass(MyStyle.bookNameClass)
+            style {
+                fontFamily = "Georgia"
             }
-            text(controller.textString) {
-                // style isn't in stylesheet bc it needs access to userFontSize
+        }
+        scrollpane {
+            text(controller.verses) {
+            // style isn't in stylesheet bc it needs access to userFontSize
                 style {
                     font = Font(userFontSize)
                     fontFamily = "Papyrus"
-                    textAlignment = TextAlignment.CENTER
+                    textAlignment= TextAlignment.CENTER
                 }
-                // sets text to wrap at 1000 px
-                // which DIDN'T WORK IN THE CLASS (╯°□°）╯︵ ┻━┻
-                // BUT IT WORKS HERE FOR SOME REASON (╯°□°）╯︵ ┻━┻
-                // I SPENT HOURS ON THIS                (╯°□°）╯︵ ┻━┻
-                this.wrappingWidth = 700.0
+            // sets text to wrap at 1000 px
+            // which DIDN'T WORK IN THE CLASS (╯°□°）╯︵ ┻━┻
+            // BUT IT WORKS HERE FOR SOME REASON (╯°□°）╯︵ ┻━┻
+            // I SPENT HOURS ON THIS                (╯°□°）╯︵ ┻━┻
+            this.wrappingWidth = 640.0
+
             }
         }
     }
+}
 
-    class MyController : Controller() {
-        val otherController: LeftSideBar.SideBarController by inject()
 
-        var bookName: String = otherController.book
-        var chapterNo: String = otherController.chapter
-        var textString: String = " Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla tincidunt suscipit velit, finibus maximus magna posuere a. Mauris et pulvinar ligula. Sed porta finibus metus, in vestibulum enim condimentum eget. Nunc facilisis convallis sem ac scelerisque. Nulla nec lectus in lectus ultrices sodales. Sed sagittis sem tristique justo ultrices luctus. Praesent sed laoreet tortor.\n" +
-                "\n" +
-                "Nunc eleifend commodo dui, efficitur bibendum massa pulvinar nec. Suspendisse eleifend dolor eu auctor ultricies. Sed tempus enim ut libero congue, et aliquet ante luctus. Sed vulputate turpis in consectetur tristique. Donec consequat tincidunt quam quis tincidunt. Proin ipsum eros, gravida quis orci sit amet, ultrices commodo libero. Nam rhoncus mattis orci, vitae ullamcorper libero. Maecenas quis convallis nulla. Morbi sed tincidunt augue, quis suscipit lacus. Morbi at erat sit amet justo cursus sagittis quis vitae massa. In semper tincidunt est, eget elementum nibh mollis ac. Quisque eget placerat mauris. In nibh neque, accumsan sit amet lorem nec, rhoncus aliquam tortor. Ut sit amet faucibus ante, et finibus elit. Duis semper et ipsum ac porttitor.\n" +
-                "\n" +
-                "Quisque placerat, dui lacinia iaculis commodo, ante lorem posuere sem, eget condimentum elit elit non metus. Nunc placerat et arcu nec volutpat. Donec non bibendum metus. Ut congue quis tellus porta vestibulum. Duis sit amet ultrices tellus, fringilla rutrum arcu. Curabitur vitae porttitor erat, ac molestie metus. Suspendisse congue velit risus, vel commodo mauris viverra vel. Aliquam vulputate neque sed convallis convallis. Nunc eu sagittis turpis. Sed dictum condimentum nisl, et malesuada nisl. Nam venenatis nunc sollicitudin purus viverra pharetra. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. "
+/**
+ * Used to store the values and data fto display
+ */
+class MyController : Controller() {
 
-        /**
-         * may or may not be used to update the bible viewer
-         */
-        fun updateView(bookName: String, chapterNo: String, textString: String) {
-            this.bookName = bookName
-            this.chapterNo = chapterNo
-            this.textString = textString
-        }
+//    val textView: BibleView by inject()
+
+    var lang = SimpleStringProperty("")
+    var vers = SimpleStringProperty("")
+    var bookName = SimpleStringProperty("")
+    var chapter = SimpleStringProperty("")
+    var verses = SimpleStringProperty("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+
+
+    // sets the language
+    fun setLanguage(inputValue: String) {
+        println("$inputValue set as language")
+        lang.value = inputValue
+    }
+    fun setVersion(inputValue: String) {
+        println("$inputValue set as version")
+        vers.value = inputValue
+    }
+
+    fun setScreen(name: String, chapterNo: String, textValue: String) {
+        //println(textValue)
+        bookName.value = name
+        chapter.value = chapterNo
+        verses.value = textValue
+        println(verses)
+       // textView.updateScripture()
+
+        //val updateScreen = UpdateScreen(BooknChpt(bookName, chapter, verses))
     }
 }

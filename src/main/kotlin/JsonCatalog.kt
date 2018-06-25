@@ -1,10 +1,8 @@
 import com.squareup.moshi.Json
 
-private const val catalogID = "languages"
-private const val languageID = "title"
-private const val versionID = "title"
-private const val bookID = "identifier"
-private const val titleID = "title"
+/**
+ * Classes used to obtain the data form the Json catalog through Moshi
+ */
 
 //@JsonClass(generateAdapter = true)
 data class Root(
@@ -19,7 +17,7 @@ data class Languages (
 
 //@JsonClass(generateAdapter = true)
 data class Recource (
-        val title: String,
+        val identifier: String,
         val subject: String,
         val projects: List<Project>
 )
