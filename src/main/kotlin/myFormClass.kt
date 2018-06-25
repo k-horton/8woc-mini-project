@@ -64,9 +64,8 @@ class LeftSideBar: View() {
             padding = box(10.px)
         }
         squeezebox {
-            /**
+            /*
              * Select a language from an auto-complete textbox.
-             * (Auto-complete feature IN PROGRESS.)
              */
             fold("Language Selection", expanded = true, closeable = false) {
                 form {
@@ -139,7 +138,6 @@ class LeftSideBar: View() {
             }
             /**
              * Select a book and type in a chapter number.
-             * TONS of error-trapping.
              */
             fold("Book", expanded = true, closeable = false) {
                 form {
@@ -150,7 +148,7 @@ class LeftSideBar: View() {
                         button("Select") {
                             addClass(MyStyle.niceButton)
                             action {
-                                // if book isn't selected
+                                // if book and version aren't selected
                                 if (bookSelection.value != null && versionSearch.value != null) {
                                     /**
                                      * Obtain and store the data from the selected book
@@ -158,6 +156,9 @@ class LeftSideBar: View() {
                                     curBook = getBook(curVer.filter { it.name == bookSelection.value }[0].url)
                                     //println(curBook.chapters.size)
 
+                                    /**
+                                     * Clears chapters if book name is changed.
+                                     */
                                     chapters.clear()
                                     chapters.addAll(IntRange(1, curBook.chapters.size).map { it.toString() })
                                     curBookName = curBook.name
@@ -218,6 +219,10 @@ class BibleView: View() {
             }
         }
         scrollpane {
+            style {
+                backgroundColor += Color.ANTIQUEWHITE
+                padding = box(15.px)
+            }
             text(controller.verses) {
             // style isn't in stylesheet bc it needs access to userFontSize
                 style {
@@ -256,18 +261,20 @@ class MyController : Controller() {
         println("$inputValue set as language")
         lang.value = inputValue
     }
+    // sets version
     fun setVersion(inputValue: String) {
         println("$inputValue set as version")
         vers.value = inputValue
     }
 
+    // sets what's on the screen
     fun setScreen(name: String, chapterNo: String, textValue: String) {
         //println(textValue)
         bookName.value = name
         chapter.value = chapterNo
         verses.value = textValue
         //println(verses)
-       // textView.updateScripture()
+        // textView.updateScripture()
 
         //val updateScreen = UpdateScreen(BooknChpt(bookName, chapter, verses))
     }
