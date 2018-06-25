@@ -1,3 +1,8 @@
+/**
+ * This file contains the interface Reftrofit uses to pull the JSON
+ * catalog into the JsonCatalog.kt classes through Moshi
+ */
+
 import retrofit2.Call
 import retrofit2.http.GET
 

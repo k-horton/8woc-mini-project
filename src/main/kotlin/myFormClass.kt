@@ -207,7 +207,7 @@ class BibleView: View() {
     var userFontSize : Double = 15.0
 
     override var root = vbox {
-        println(controller)
+
         addClass(MyStyle.bibleViewer)
 
         text(controller.bookName + " " + controller.chapter) {
@@ -265,7 +265,7 @@ class MyController : Controller() {
         bookName.value = name
         chapter.value = chapterNo
         verses.value = textValue
-        println(verses)
+        //println(verses)
        // textView.updateScripture()
 
         //val updateScreen = UpdateScreen(BooknChpt(bookName, chapter, verses))

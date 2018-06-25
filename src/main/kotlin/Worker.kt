@@ -1,3 +1,8 @@
+/**
+ * This file contains the worker functions that are used to save the catalog Bible data
+ * into more manageable data structures
+ */
+
 import java.net.URL
 
 fun getBibleData() : List<Language> {

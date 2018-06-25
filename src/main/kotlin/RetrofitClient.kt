@@ -1,3 +1,9 @@
+/**
+ * This file contains the Retrofit Client which is used to build
+ * the retrofit instance and use Moshi to as a mehtod to store the
+ * JSON catalog
+ */
+
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
