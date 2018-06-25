@@ -1,8 +1,5 @@
-import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
-import javafx.geometry.Pos
-import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.TextAlignment
@@ -59,6 +56,7 @@ class LeftSideBar: View() {
     var curLan = emptyList<Version>()
     var curVer = emptyList<Book>()
     lateinit var curBook : USFMBook
+    var curBookName = ""
 
     //val verse = SimpleStringProperty()
 
@@ -77,7 +75,7 @@ class LeftSideBar: View() {
                         field("Language") {
                             combobox(language, languageList)
                         }
-                        button("SELECT") {
+                        button("Select") {
                             addClass(MyStyle.niceButton)
                             useMaxWidth = false
                             action {
@@ -117,7 +115,7 @@ class LeftSideBar: View() {
                         field("Version") {
                             combobox(versionSearch, versions)
                         }
-                        button("SUBMIT") {
+                        button("Select") {
                             addClass(MyStyle.niceButton)
                             action {
                                 if(versionSearch.value != null && language.value != null){
@@ -150,7 +148,7 @@ class LeftSideBar: View() {
                         field("Book") {
                             combobox(bookSelection, books)
                         }
-                        button("Submit") {
+                        button("Select") {
                             addClass(MyStyle.niceButton)
                             action {
                                 // if book isn't selected
@@ -162,8 +160,7 @@ class LeftSideBar: View() {
                                     //println(curBook.chapters.size)
 
                                     chapters.addAll(IntRange(1, curBook.chapters.size).map { it.toString() })
-                                    controller.setBook(curBook.name)
-
+                                    curBookName = curBook.name
                                 }
                             }
                         }
@@ -180,7 +177,7 @@ class LeftSideBar: View() {
                         field("Chapter") {
                             combobox(chapter, chapters)
                         }
-                        button("GO!") {
+                        button("Submit") {
                             addClass(MyStyle.niceButton)
                             action {
                                 if (chapter.value != null && bookSelection.value != null) {
@@ -188,7 +185,9 @@ class LeftSideBar: View() {
                                      * Obtain the verses and pass them to the controller
                                      */
                                     val scripture = curBook.chapters[chapter.value.toInt() - 1].verses
-                                    controller.setChapterAndText(chapter.value, scripture)
+                                    println(chapter.value)
+                                    println(scripture)
+                                    controller.setScreen(curBookName, chapter.value, scripture)
                                 }
                             }
                         }
@@ -209,103 +208,67 @@ class BibleView: View() {
     var userFontSize : Double = 15.0
 
     override var root = vbox {
-        addClass(MyStyle.bibleViewer)
-    }
-
-/*{
+        println(controller)
         addClass(MyStyle.bibleViewer)
 
-        text(controller.book + " " + controller.chapter) {
+        text(controller.bookName + " " + controller.chapter) {
             addClass(MyStyle.bookNameClass)
             style {
                 fontFamily = "Georgia"
             }
         }
-        var verses = text(controller.verses) {
+        scrollpane {
+            text(controller.verses) {
             // style isn't in stylesheet bc it needs access to userFontSize
-            style {
-                font = Font(userFontSize)
-                fontFamily = "Papyrus"
-                textAlignment= TextAlignment.CENTER
-            }
+                style {
+                    font = Font(userFontSize)
+                    fontFamily = "Papyrus"
+                    textAlignment= TextAlignment.CENTER
+                }
             // sets text to wrap at 1000 px
             // which DIDN'T WORK IN THE CLASS (╯°□°）╯︵ ┻━┻
             // BUT IT WORKS HERE FOR SOME REASON (╯°□°）╯︵ ┻━┻
             // I SPENT HOURS ON THIS                (╯°□°）╯︵ ┻━┻
-            this.wrappingWidth = 700.0
-        }
+            this.wrappingWidth = 640.0
 
-
-    }
-*/
-    /**
-     * Cheap attempt to reload the view.... Us -> (╯°□°）╯︵ ┻━┻ <- root
-     */
-    fun updateScripture () {
-        root.apply {
-            vbox {
-                addClass(MyStyle.bibleViewer)
-
-                text(controller.bookName + " " + controller.chapter) {
-                    addClass(MyStyle.bookNameClass)
-                    style {
-                        fontFamily = "Georgia"
-                    }
-                }
-                println(controller.verses)
-                scrollpane {
-                    text(controller.verses) {
-                        // style isn't in stylesheet bc it needs access to userFontSize
-                        style {
-                            font = Font(userFontSize)
-                            fontFamily = "Papyrus"
-                            textAlignment= TextAlignment.CENTER
-                        }
-                        // sets text to wrap at 1000 px
-                        // which DIDN'T WORK IN THE CLASS (╯°□°）╯︵ ┻━┻
-                        // BUT IT WORKS HERE FOR SOME REASON (╯°□°）╯︵ ┻━┻
-                        // I SPENT HOURS ON THIS                (╯°□°）╯︵ ┻━┻
-                        this.wrappingWidth = 640.0
-                    }
-                }
             }
         }
     }
 }
+
 
 /**
  * Used to store the values and data fto display
  */
 class MyController : Controller() {
 
-    val textView: BibleView by inject()
+//    val textView: BibleView by inject()
 
-    var lang: String = ""
-    var vers: String = ""
-    var bookName: String = ""
-    var chapter: String = ""
-    var verses: String = ""
+    var lang = SimpleStringProperty("")
+    var vers = SimpleStringProperty("")
+    var bookName = SimpleStringProperty("")
+    var chapter = SimpleStringProperty("")
+    var verses = SimpleStringProperty("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
 
 
     // sets the language
     fun setLanguage(inputValue: String) {
         println("$inputValue set as language")
-        lang = inputValue
+        lang.value = inputValue
     }
     fun setVersion(inputValue: String) {
         println("$inputValue set as version")
-        vers = inputValue
-    }
-    fun setBook(bookValue: String) {
-        //println("Opening $bookValue...")
-        bookName = bookValue
+        vers.value = inputValue
     }
 
-    fun setChapterAndText(chapterNo: String, textValue: String) {
+    fun setScreen(name: String, chapterNo: String, textValue: String) {
         //println(textValue)
-        chapter = chapterNo
-        verses = textValue
+        bookName.value = name
+        chapter.value = chapterNo
+        verses.value = textValue
+        println(verses)
+       // textView.updateScripture()
 
-        textView.updateScripture()
+        //val updateScreen = UpdateScreen(BooknChpt(bookName, chapter, verses))
     }
 }
