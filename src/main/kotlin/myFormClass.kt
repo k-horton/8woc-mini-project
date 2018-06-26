@@ -92,7 +92,7 @@ class LeftSideBar: View() {
                                 }
                             }
                         }
-                        button(messages["selectButton"]) {
+                        /* button(messages["selectButton"]) {
                             addClass(MyStyle.niceButton)
                             useMaxWidth = false
                             action {
@@ -119,7 +119,7 @@ class LeftSideBar: View() {
                                     chapters.clear()
                                 }
                             }
-                        }
+                        } */
                     }
                 }
             }
@@ -138,7 +138,7 @@ class LeftSideBar: View() {
                                 }
                             }
                         }
-                        button(messages["selectButton"]) {
+                        /* button(messages["selectButton"]) {
                             addClass(MyStyle.niceButton)
                             action {
                                 if(versionSearch.value != null && language.value != null){
@@ -157,7 +157,7 @@ class LeftSideBar: View() {
                                     chapters.clear()
                                 }
                             }
-                        }
+                        } */
                     }
                 }
             }
@@ -194,9 +194,9 @@ class LeftSideBar: View() {
                                     curBookName = curBook.name
                                 }
                             } */
-                        }
                     }
                 }
+            }
 
 
             /**
@@ -214,7 +214,7 @@ class LeftSideBar: View() {
                                 }
                             }
                         }
-                        button(messages["submitButton"]) {
+                        /* button(messages["submitButton"]) {
                             addClass(MyStyle.niceButton)
                             action {
                                 if (chapter.value != null && bookSelection.value != null) {
@@ -227,7 +227,7 @@ class LeftSideBar: View() {
                                     controller.setScreen(curBookName, chapter.value, scripture)
                                 }
                             }
-                        }
+                        } */
                     }
                 }
             }
