@@ -119,7 +119,7 @@ class LeftSideBar: View() {
                                     chapters.clear()
                                 }
                             }
-                        } */
+                        }
                     }
                 }
             }
@@ -168,7 +168,7 @@ class LeftSideBar: View() {
                 form {
                     fieldset(messages["bookFieldset"]) {
                         field(messages["bookField"]) {
-                            combobox(bookSelection, books) combobox(bookSelection, books) {
+                            combobox(bookSelection, books) {
                                 makeAutocompletable {
                                     books.observable().filtered { current ->
                                         current!!.toLowerCase().contains(it.toLowerCase())
@@ -176,7 +176,7 @@ class LeftSideBar: View() {
                                 }
                             }
                         }
-                            addClass(MyStyle.niceButton)
+                            /* addClass(MyStyle.niceButton)
                             action {
                                 // if book and version aren't selected
                                 if (bookSelection.value != null && versionSearch.value != null) {
@@ -193,11 +193,11 @@ class LeftSideBar: View() {
                                     chapters.addAll(IntRange(1, curBook.chapters.size).map { it.toString() })
                                     curBookName = curBook.name
                                 }
-                            }
-                        } */
+                            } */
+                        }
                     }
                 }
-            }
+
 
             /**
              * Set the Selection for Chapter
@@ -227,7 +227,7 @@ class LeftSideBar: View() {
                                     controller.setScreen(curBookName, chapter.value, scripture)
                                 }
                             }
-                        } */
+                        }
                     }
                 }
             }
