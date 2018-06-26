@@ -1,6 +1,7 @@
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import tornadofx.*
+import java.util.*
 
 /**
  * Initializes the class and the stylesheet.
@@ -15,6 +16,7 @@ class MyApp : App(MyView::class, MyStyle::class) {
     // loads the stylesheet
     init {
         reloadStylesheetsOnFocus()
+        // FX.locale = Locale("ar")
     }
 }
 
@@ -25,6 +27,7 @@ class MyView : View() {
     override val root = VBox()
 
     init {
+
         with(root) {
             // pull some views
             val listView = find(BibleView::class)
