@@ -2,6 +2,7 @@ import javafx.geometry.NodeOrientation
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import tornadofx.*
+import java.util.*
 
 /**
  * Initializes the class and the stylesheet.
@@ -16,6 +17,7 @@ class MyApp : App(MyView::class, MyStyle::class) {
     // loads the stylesheet
     init {
         reloadStylesheetsOnFocus()
+        // FX.locale = Locale("ar")
     }
 }
 
@@ -25,6 +27,7 @@ class MyApp : App(MyView::class, MyStyle::class) {
 class MyView : View() {
     override val root = VBox()
     init {
+
         with(root) {
             //root.nodeOrientation = NodeOrientation.RIGHT_TO_LEFT
             // pull some views
@@ -36,6 +39,7 @@ class MyView : View() {
             borderpane {
                 center = listView.root
                 left = leftSideBar.root
+                // right = leftSideBar.root
                 top = titleBanner.root
             }
 

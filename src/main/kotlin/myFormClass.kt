@@ -1,20 +1,27 @@
+import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.TextAlignment
 import tornadofx.*
+import java.util.*
+import javax.swing.LayoutStyle
 
 
 /**
  * Creates a title across the top of the app.
  */
 class TitleBanner: View() {
+
+    // calls correct language resource bundle
+    init { messages = ResourceBundle.getBundle("MyView") }
+
     override val root = vbox {
         // style for outside the text
         addClass(MyStyle.titleClass)
 
-        text("Bible Reader") {
+        text(messages["title"]) {
             // sets text color
             // because to affect the text it's gotta be in here
             // but for the background it needs to be outside of the text object
@@ -23,7 +30,7 @@ class TitleBanner: View() {
                 fill = Color.BEIGE
             }
         }
-        text("Read the Bible. It's pretty good. 10/10\n") {
+        text(messages["tagline"]) {
             style {
                 font = Font(10.0)
                 fill = Color.BEIGE
@@ -36,6 +43,9 @@ class TitleBanner: View() {
  * Menu with a form to ask the user for Chapter and Verse.
  */
 class LeftSideBar: View() {
+
+    // calls correct language resource bundle
+    init { messages = ResourceBundle.getBundle("MyView") }
 
     /**
      * Get bible Data from door43
@@ -66,13 +76,14 @@ class LeftSideBar: View() {
             padding = box(10.px)
         }
         squeezebox {
-            /*
+            /**
              * Select a language from an auto-complete textbox.
              */
-            fold("Language Selection", expanded = true, closeable = false) {
+            fold(messages["langFold"], expanded = true, closeable = false) {
                 form {
-                    fieldset("1: Select a Language") {
-                        field("Language") {
+
+                    fieldset(messages["langFieldset"]) {
+                        field(messages["langField"]) {
                             combobox(language, languageList) {
                                 makeAutocompletable {
                                     languageList.observable().filtered {
@@ -81,7 +92,7 @@ class LeftSideBar: View() {
                                 }
                             }
                         }
-                        /* button("Select") {
+                        button(messages["selectButton"]) {
                             addClass(MyStyle.niceButton)
                             useMaxWidth = false
                             action {
@@ -115,10 +126,10 @@ class LeftSideBar: View() {
             /**
              * Select a version from a dropdown menu.
              */
-            fold("Version Selection", expanded = true, closeable = false) {
+            fold(messages["verFold"], expanded = true, closeable = false) {
                 form {
-                    fieldset("2: Select a Version") {
-                        field("Version ") {
+                    fieldset(messages["verFieldset"]) {
+                        field(messages["verField"]) {
                             combobox(versionSearch, versions) {
                                 makeAutocompletable {
                                     books.observable().filtered { current ->
@@ -127,7 +138,7 @@ class LeftSideBar: View() {
                                 }
                             }
                         }
-                        /* button("Select") {
+                        button(messages["selectButton"]) {
                             addClass(MyStyle.niceButton)
                             action {
                                 if(versionSearch.value != null && language.value != null){
@@ -146,18 +157,18 @@ class LeftSideBar: View() {
                                     chapters.clear()
                                 }
                             }
-                        } */
+                        }
                     }
                 }
             }
             /**
              * Select a book and type in a chapter number.
              */
-            fold("Book", expanded = true, closeable = false) {
+            fold(messages["bookFold"], expanded = true, closeable = false) {
                 form {
-                    fieldset("3: Select a Book") {
-                        field("Book    ") {
-                            combobox(bookSelection, books) {
+                    fieldset(messages["bookFieldset"]) {
+                        field(messages["bookField"]) {
+                            combobox(bookSelection, books) combobox(bookSelection, books) {
                                 makeAutocompletable {
                                     books.observable().filtered { current ->
                                         current!!.toLowerCase().contains(it.toLowerCase())
@@ -165,7 +176,6 @@ class LeftSideBar: View() {
                                 }
                             }
                         }
-                        /* button("Select") {
                             addClass(MyStyle.niceButton)
                             action {
                                 // if book and version aren't selected
@@ -192,21 +202,19 @@ class LeftSideBar: View() {
             /**
              * Set the Selection for Chapter
              */
-            fold("Chapter", expanded = true, closeable = false) {
+            fold(messages["chapFold"], expanded = true, closeable = false) {
                 form {
-                    fieldset("4: Select a Chapter") {
-                        field("Chapter ") {
+                    fieldset(messages["chapFieldset"]) {
+                        field(messages["chapField"]) {
                             combobox(chapter, chapters) {
                                 makeAutocompletable (automaticPopupWidth = true){
                                     chapters.observable().filtered { current ->
                                         current!!.toLowerCase().startsWith(it.toLowerCase())
                                     }
                                 }
-
-                                this.setMaxSize(200.0, 500.0)
                             }
                         }
-                        /* button("Submit") {
+                        button(messages["submitButton"]) {
                             addClass(MyStyle.niceButton)
                             action {
                                 if (chapter.value != null && bookSelection.value != null) {
@@ -299,13 +307,18 @@ class LeftSideBar: View() {
 class BibleView: View() {
 
     // assign MyController to a value
-    private val controller: MyController by inject()
-    private var userFontSize : Double = 15.0
+    val controller: MyController by inject()
+    var userFontSize = SimpleDoubleProperty(15.0)
 
     override var root = vbox {
 
         addClass(MyStyle.bibleViewer)
 
+        /* button("Text++") {
+            action {
+                // not right now
+            }
+        } */
         text(controller.bookName + " " + controller.chapter) {
             addClass(MyStyle.bookNameClass)
             style {
@@ -320,16 +333,16 @@ class BibleView: View() {
             text(controller.verses) {
             // style isn't in stylesheet bc it needs access to userFontSize
                 style {
-                    font = Font(userFontSize)
+                    font = Font(userFontSize.value)
                     fontFamily = "Papyrus"
                     textAlignment= TextAlignment.CENTER
+
                 }
             // sets text to wrap
             // which DIDN'T WORK IN THE CLASS (╯°□°）╯︵ ┻━┻
             // BUT IT WORKS HERE FOR SOME REASON (╯°□°）╯︵ ┻━┻
             // I SPENT HOURS ON THIS                (╯°□°）╯︵ ┻━┻
             this.wrappingWidth = 640.0
-
             }
         }
     }
