@@ -35,6 +35,7 @@ class MyView : View() {
             borderpane {
                 center = listView.root
                 left = leftSideBar.root
+                // right = leftSideBar.root
                 top = titleBanner.root
             }
 
