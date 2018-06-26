@@ -59,7 +59,7 @@ private fun formatUSFM(usfmString: String) : USFMBook {
         val key = line.substringBefore(' ')
 
         when (key) {
-            "\\h" -> name = line.substring(line.lastIndexOf(" ") + 1)
+            "\\h" -> if (line.length > 3) name = line.substring(3)
             "\\c" -> if (chpt != "") {
                 val num = line.substring(3).filter{ it != ' ' }.toInt() - 1
                 usfmBook.add(USFMChpt(num, chpt))
