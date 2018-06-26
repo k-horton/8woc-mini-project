@@ -5,8 +5,8 @@ import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.TextAlignment
 import tornadofx.*
-
-// private val LANGUAGE: ES()
+import java.util.*
+import javax.swing.LayoutStyle
 
 /**
  * Creates a title across the top of the app.
@@ -14,13 +14,14 @@ import tornadofx.*
 class TitleBanner: View() {
 
     // calls correct language
-    val lang: ARABIC by inject()
+    //val lang: AR by inject()
+    init { messages = ResourceBundle.getBundle("MyView") }
 
     override val root = vbox {
         // style for outside the text
         addClass(MyStyle.titleClass)
 
-        text(lang.title) {
+        text(messages["title"]) {
             // sets text color
             // because to affect the text it's gotta be in here
             // but for the background it needs to be outside of the text object
@@ -29,7 +30,7 @@ class TitleBanner: View() {
                 fill = Color.BEIGE
             }
         }
-        text(lang.tagline) {
+        text(messages["tagline"]) {
             style {
                 font = Font(10.0)
                 fill = Color.BEIGE
@@ -44,7 +45,8 @@ class TitleBanner: View() {
 class LeftSideBar: View() {
 
     // calls correct language
-    val lang: ARABIC by inject()
+    //val lang: AR by inject()
+    init { messages = ResourceBundle.getBundle("MyView") }
 
     /**
      * Get bible Data from door43
@@ -74,16 +76,16 @@ class LeftSideBar: View() {
             padding = box(10.px)
         }
         squeezebox {
-            /*
+            /**
              * Select a language from an auto-complete textbox.
              */
-            fold(lang.langFold, expanded = true, closeable = false) {
+            fold(messages["langFold"], expanded = true, closeable = false) {
                 form {
-                    fieldset(lang.langFieldset) {
-                        field(lang.langField) {
+                    fieldset(messages["langFieldset"]) {
+                        field(messages["langField"]) {
                             combobox(language, languageList)
                         }
-                        button(lang.selectButton) {
+                        button(messages["selectButton"]) {
                             addClass(MyStyle.niceButton)
                             useMaxWidth = false
                             action {
@@ -117,13 +119,13 @@ class LeftSideBar: View() {
             /**
              * Select a version from a dropdown menu.
              */
-            fold(lang.verFold, expanded = true, closeable = false) {
+            fold(messages["verFold"], expanded = true, closeable = false) {
                 form {
-                    fieldset(lang.verFieldset) {
-                        field(lang.verField) {
+                    fieldset(messages["verFieldset"]) {
+                        field(messages["verField"]) {
                             combobox(versionSearch, versions)
                         }
-                        button(lang.selectButton) {
+                        button(messages["selectButton"]) {
                             addClass(MyStyle.niceButton)
                             action {
                                 if(versionSearch.value != null && language.value != null){
@@ -149,13 +151,13 @@ class LeftSideBar: View() {
             /**
              * Select a book and type in a chapter number.
              */
-            fold(lang.bookFold, expanded = true, closeable = false) {
+            fold(messages["bookFold"], expanded = true, closeable = false) {
                 form {
-                    fieldset(lang.bookFieldset) {
-                        field(lang.bookField) {
+                    fieldset(messages["bookFieldset"]) {
+                        field(messages["bookField"]) {
                             combobox(bookSelection, books)
                         }
-                        button(lang.selectButton) {
+                        button(messages["selectButton"]) {
                             addClass(MyStyle.niceButton)
                             action {
                                 // if book and version aren't selected
@@ -182,13 +184,13 @@ class LeftSideBar: View() {
             /**
              * Set the Selection for Chapter
              */
-            fold(lang.chapFold, expanded = true, closeable = false) {
+            fold(messages["chapFold"], expanded = true, closeable = false) {
                 form {
-                    fieldset(lang.chapFieldset) {
-                        field(lang.chapField) {
+                    fieldset(messages["chapFieldset"]) {
+                        field(messages["chapField"]) {
                             combobox(chapter, chapters)
                         }
-                        button(lang.submitButton) {
+                        button(messages["submitButton"]) {
                             addClass(MyStyle.niceButton)
                             action {
                                 if (chapter.value != null && bookSelection.value != null) {
@@ -244,13 +246,13 @@ class BibleView: View() {
                     font = Font(userFontSize.value)
                     fontFamily = "Papyrus"
                     textAlignment= TextAlignment.CENTER
+
                 }
             // sets text to wrap
             // which DIDN'T WORK IN THE CLASS (╯°□°）╯︵ ┻━┻
             // BUT IT WORKS HERE FOR SOME REASON (╯°□°）╯︵ ┻━┻
             // I SPENT HOURS ON THIS                (╯°□°）╯︵ ┻━┻
             this.wrappingWidth = 640.0
-
             }
         }
     }

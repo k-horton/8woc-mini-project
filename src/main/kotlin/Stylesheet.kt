@@ -31,7 +31,7 @@ class MyStyle: Stylesheet() {
 
         bibleViewer {
             minWidth = 700.px
-            maxWidth = 800.px
+            //maxWidth = 800.px
             alignment = Pos.TOP_CENTER
             padding = box(10.px)
 
@@ -52,7 +52,6 @@ class MyStyle: Stylesheet() {
 
         titleClass {
             minWidth = 1000.px
-            maxWidth = 1000.px
             alignment = Pos.TOP_CENTER
 
             textAlignment = TextAlignment.CENTER
