@@ -16,6 +16,7 @@ class MyApp : App(MyView::class, MyStyle::class) {
     // loads the stylesheet
     init {
         reloadStylesheetsOnFocus()
+        // FX.locale = Locale("ar")
     }
 }
 
@@ -26,8 +27,6 @@ class MyView : View() {
     override val root = VBox()
 
     init {
-        // set locale
-        // FX.locale = Locale("es")
 
         with(root) {
             // pull some views

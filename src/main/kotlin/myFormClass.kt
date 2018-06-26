@@ -13,8 +13,7 @@ import javax.swing.LayoutStyle
  */
 class TitleBanner: View() {
 
-    // calls correct language
-    //val lang: AR by inject()
+    // calls correct language resource bundle
     init { messages = ResourceBundle.getBundle("MyView") }
 
     override val root = vbox {
@@ -44,8 +43,7 @@ class TitleBanner: View() {
  */
 class LeftSideBar: View() {
 
-    // calls correct language
-    //val lang: AR by inject()
+    // calls correct language resource bundle
     init { messages = ResourceBundle.getBundle("MyView") }
 
     /**
