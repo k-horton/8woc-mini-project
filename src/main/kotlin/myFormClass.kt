@@ -5,6 +5,7 @@ import javafx.scene.text.Font
 import javafx.scene.text.TextAlignment
 import tornadofx.*
 
+
 /**
  * Creates a title across the top of the app.
  */
@@ -42,22 +43,23 @@ class LeftSideBar: View() {
      */
     private val bibleData = getBibleData()
 
-    val controller: MyController by inject()
+    private val controller: MyController by inject()
 
-    val language = SimpleStringProperty()
-    val versionSearch = SimpleStringProperty()
-    val languageList = FXCollections.observableArrayList(bibleData.map { it.name })
-    val versions = FXCollections.observableArrayList<String?>()
-    val books = FXCollections.observableArrayList<String?>()
-    val bookSelection = SimpleStringProperty()
-    val chapter = SimpleStringProperty()
-    val chapters = FXCollections.observableArrayList<String?>()
+    private val language = SimpleStringProperty()
+    private val versionSearch = SimpleStringProperty()
+    private val languageList = FXCollections.observableArrayList(bibleData.map { it.name })
+    private val versions = FXCollections.observableArrayList<String?>()
+    private val books = FXCollections.observableArrayList<String?>()
+    private val bookSelection = SimpleStringProperty()
+    private val chapter = SimpleStringProperty()
+    private val chapters = FXCollections.observableArrayList<String?>()
 
-    var curLan = emptyList<Version>()
-    var curVer = emptyList<Book>()
-    lateinit var curBook : USFMBook
-    
-    var curBookName = ""
+
+    private var curLan = emptyList<Version>()
+    private var curVer = emptyList<Book>()
+    private lateinit var curBook : USFMBook
+
+    private var curBookName = ""
 
     override val root = vbox {
         style {
@@ -71,9 +73,15 @@ class LeftSideBar: View() {
                 form {
                     fieldset("1: Select a Language") {
                         field("Language") {
-                            combobox(language, languageList)
+                            combobox(language, languageList) {
+                                makeAutocompletable {
+                                    languageList.observable().filtered {
+                                        current -> current.toLowerCase().contains(it.toLowerCase())
+                                    }
+                                }
+                            }
                         }
-                        button("Select") {
+                        /* button("Select") {
                             addClass(MyStyle.niceButton)
                             useMaxWidth = false
                             action {
@@ -100,7 +108,7 @@ class LeftSideBar: View() {
                                     chapters.clear()
                                 }
                             }
-                        }
+                        } */
                     }
                 }
             }
@@ -110,10 +118,16 @@ class LeftSideBar: View() {
             fold("Version Selection", expanded = true, closeable = false) {
                 form {
                     fieldset("2: Select a Version") {
-                        field("Version") {
-                            combobox(versionSearch, versions)
+                        field("Version ") {
+                            combobox(versionSearch, versions) {
+                                makeAutocompletable {
+                                    books.observable().filtered { current ->
+                                        current!!.toLowerCase().contains(it.toLowerCase())
+                                    }
+                                }
+                            }
                         }
-                        button("Select") {
+                        /* button("Select") {
                             addClass(MyStyle.niceButton)
                             action {
                                 if(versionSearch.value != null && language.value != null){
@@ -132,7 +146,7 @@ class LeftSideBar: View() {
                                     chapters.clear()
                                 }
                             }
-                        }
+                        } */
                     }
                 }
             }
@@ -142,10 +156,16 @@ class LeftSideBar: View() {
             fold("Book", expanded = true, closeable = false) {
                 form {
                     fieldset("3: Select a Book") {
-                        field("Book") {
-                            combobox(bookSelection, books)
+                        field("Book    ") {
+                            combobox(bookSelection, books) {
+                                makeAutocompletable {
+                                    books.observable().filtered { current ->
+                                        current!!.toLowerCase().contains(it.toLowerCase())
+                                    }
+                                }
+                            }
                         }
-                        button("Select") {
+                        /* button("Select") {
                             addClass(MyStyle.niceButton)
                             action {
                                 // if book and version aren't selected
@@ -164,7 +184,7 @@ class LeftSideBar: View() {
                                     curBookName = curBook.name
                                 }
                             }
-                        }
+                        } */
                     }
                 }
             }
@@ -175,10 +195,18 @@ class LeftSideBar: View() {
             fold("Chapter", expanded = true, closeable = false) {
                 form {
                     fieldset("4: Select a Chapter") {
-                        field("Chapter") {
-                            combobox(chapter, chapters)
+                        field("Chapter ") {
+                            combobox(chapter, chapters) {
+                                makeAutocompletable (automaticPopupWidth = true){
+                                    chapters.observable().filtered { current ->
+                                        current!!.toLowerCase().startsWith(it.toLowerCase())
+                                    }
+                                }
+
+                                this.setMaxSize(200.0, 500.0)
+                            }
                         }
-                        button("Submit") {
+                        /* button("Submit") {
                             addClass(MyStyle.niceButton)
                             action {
                                 if (chapter.value != null && bookSelection.value != null) {
@@ -191,9 +219,75 @@ class LeftSideBar: View() {
                                     controller.setScreen(curBookName, chapter.value, scripture)
                                 }
                             }
-                        }
+                        } */
                     }
                 }
+            }
+        }
+
+        language.onChange {
+            if (languageList.contains(language.value)) {
+                controller.setLanguage(language.value)
+
+                /**
+                 * Save the list of versions for the current language
+                 * and add them to the dropdown menu
+                 * Clear all lower options
+                 */
+                curLan = bibleData.filter { it.name == language.value }[0].versions
+
+                versions.clear()
+                versions.addAll(curLan.map { it.name })
+
+                books.clear()
+                chapters.clear()
+            }
+        }
+        versionSearch.onChange {
+            if(versions.contains(versionSearch.value)){
+                controller.setVersion(versionSearch.value)
+
+                /**
+                 * Save the list of books for the current version
+                 * and add them to the dropdown menu
+                 * Clear all lower options
+                 */
+                curVer =  curLan.filter { it.name == versionSearch.value }[0].books
+
+                books.clear()
+                books.addAll(curVer.map { it.name })
+
+                chapters.clear()
+            }
+        }
+
+        bookSelection.onChange {
+            if (books.contains(bookSelection.value)) {
+                /**
+                 * Obtain and store the data from the selected book
+                 */
+                curBook = getBook(curVer.filter { it.name == bookSelection.value }[0].url)
+                //println(curBook.chapters.size)
+
+                /**
+                 * Clears chapters if book name is changed.
+                 */
+                chapters.clear()
+                chapters.addAll(IntRange(1, curBook.chapters.size).map { it.toString() })
+                curBookName = curBook.name
+            }
+        }
+
+        chapter.onChange {
+
+            if (chapters.contains(chapter.value)) {
+                /**
+                 * Obtain the verses and pass them to the controller
+                 */
+                val scripture = curBook.chapters[chapter.value.toInt() - 1].verses
+                println(chapter.value)
+                println(scripture)
+                controller.setScreen(curBookName, chapter.value, scripture)
             }
         }
     }
@@ -205,8 +299,8 @@ class LeftSideBar: View() {
 class BibleView: View() {
 
     // assign MyController to a value
-    val controller: MyController by inject()
-    var userFontSize : Double = 15.0
+    private val controller: MyController by inject()
+    private var userFontSize : Double = 15.0
 
     override var root = vbox {
 
@@ -261,6 +355,7 @@ class MyController : Controller() {
         println("$inputValue set as language")
         lang.value = inputValue
     }
+
     // sets version
     fun setVersion(inputValue: String) {
         println("$inputValue set as version")

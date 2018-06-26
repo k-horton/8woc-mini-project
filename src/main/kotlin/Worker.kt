@@ -16,7 +16,7 @@ fun getBibleData() : List<Language> {
 
     var bibleData = emptyList<Language>()
     if (rawData != null) {
-        bibleData = D43toBibles(rawData)
+        bibleData = d43toBibles(rawData)
     }
 
     return bibleData
@@ -88,10 +88,10 @@ private fun formatUSFM(usfmString: String) : USFMBook {
 }
 
 /**
- * Takes the Json formated catalog in a root class and stores the languages,
+ * Takes the Json formatted catalog in a root class and stores the languages,
  * versions, and books into a developer friendly class structure (BibleStructs.kt)
  */
-fun D43toBibles (root: Root) : List<Language> {
+fun d43toBibles (root: Root) : List<Language> {
 
     val d43Data = mutableListOf<Language>()
 
@@ -100,7 +100,14 @@ fun D43toBibles (root: Root) : List<Language> {
 
         val versions = mutableListOf<Version>()
 
-        val lan = language.title
+        var lan = language.title
+        if (!language.title.contains('(')) {
+            if (language.direction == "ltr") {
+                lan = lan + " (" + language.identifier + ")"
+            } else {
+                lan = "(" + language.identifier + ") " + lan
+            }
+        }
         //println("$lan = " + language.resources.size)
 
         for (resource in language.resources) {
