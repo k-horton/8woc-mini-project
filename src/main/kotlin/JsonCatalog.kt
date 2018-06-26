@@ -1,6 +1,6 @@
 /**
  * this file contains the classes used to store the JSON data
- * pulled trhough Moshi and Retrofit
+ * pulled through Moshi and Retrofit
  */
 
 import com.squareup.moshi.Json
@@ -17,11 +17,13 @@ data class Root(
 //@JsonClass(generateAdapter = true)
 data class Languages (
         val title: String,
-        val resources: List<Recource>
+        val identifier: String,
+        val direction: String,
+        val resources: List<Resource>
 )
 
 //@JsonClass(generateAdapter = true)
-data class Recource (
+data class Resource (
         val identifier: String,
         val subject: String,
         val projects: List<Project>

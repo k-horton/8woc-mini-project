@@ -1,3 +1,4 @@
+import javafx.geometry.NodeOrientation
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import tornadofx.*
@@ -25,10 +26,10 @@ class MyApp : App(MyView::class, MyStyle::class) {
  */
 class MyView : View() {
     override val root = VBox()
-
     init {
 
         with(root) {
+            //root.nodeOrientation = NodeOrientation.RIGHT_TO_LEFT
             // pull some views
             val listView = find(BibleView::class)
             val leftSideBar = find(LeftSideBar::class)
